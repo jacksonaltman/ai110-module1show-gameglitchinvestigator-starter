@@ -33,6 +33,8 @@ Document at least 3 bugs you found. Add rows as needed.
 
 I used Claude Code for this project. 
 
+An example of an AI suggestion that was correct was that the high/low bug was caused by the hint messages being swapped, so to switch that around to make it work. After switching it, I verified the result by running the app and seeing what message it now output.
+
 
 
 ---
