@@ -46,11 +46,15 @@ An example of an AI suggestion that wasn't completely correct (at least for my b
   and what it showed you about your code.
 - Did AI help you design or understand any tests? How?
 
+I decided whether a bug was really fixed by using test functions as well as by playing the game and observing the behavior. I used pytests to determine if the hints were working correctly. At first, they were not, but after fixing the bug the tests passed (it correctly told the user to guess higher or guess lower). AI helped me write all the tests and think of edge scenarios to test on.
+
 ---
 
 ## 4. What did you learn about Streamlit and state?
 
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
+
+Streamlit "reruns" are when streamlit literally reruns all the code for a page whenever a widget is interacted with. Session state is how streamlit saves the data in the widgets over multiple reruns. It stores it so it can be used by the reruns later on.
 
 ---
 
@@ -60,3 +64,7 @@ An example of an AI suggestion that wasn't completely correct (at least for my b
   - This could be a testing habit, a prompting strategy, or a way you used Git.
 - What is one thing you would do differently next time you work with AI on a coding task?
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+
+I want to get in the habit of making smaller commits when using git and not saving it all for the end. This makes it easier to track changes and to save more work if you mess something up.
+One thing I would do differently next time I work with AI is to take an even closer look at what all the agent is changing, as it can be tempting to walk away and let it do all the work.
+This project changed the way I think about AI generated code because it showed me that it only knows so much, and it needs my direction to help it out sometimes. Without direction, it can make up its own rules for your application, which could be a bug in the best of cases, and a security vulnerability in worse cases.

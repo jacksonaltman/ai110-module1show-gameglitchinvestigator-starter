@@ -25,28 +25,68 @@ It wrote the code, ran away, and now the game is unplayable.
 
 ## 📝 Document Your Experience
 
-- [ ] Describe the game's purpose.
-- [ ] Detail which bugs you found.
-- [ ] Explain what fixes you applied.
+### Game purpose
+
+A Streamlit number-guessing game. You pick a difficulty, guess the secret number within a limited
+number of attempts, and get a "Go HIGHER / Go LOWER" hint after each guess. Winning sooner scores more
+(up to 100), and wrong guesses cost points (the score never goes below 0).
+
+| Difficulty | Range | Attempts |
+|---|---|---|
+| Easy | 1-20 | 8 |
+| Normal | 1-50 | 7 |
+| Hard | 1-100 | 6 |
+
+### Bugs found
+
+- **Swapped hints:** a too-high guess said "Go HIGHER!" and a too-low guess said "Go LOWER!".
+- **Wrong hints on every second guess:** the secret was converted to a string on even attempts, so the
+  comparison was made on text instead of numbers.
+- **New Game didn't work after a finished game:** it never reset `status`, so the game-over check kept
+  blocking guesses. It also never reset score or history, and ignored the difficulty range.
+- **Score bugs:** a Too High guess *added* 5 points on even attempts, the score could go negative, and
+  the win bonus was off by one (a first-try win scored 80).
+- **Impossible guesses wasted attempts:** out-of-range numbers, and even non-numbers, were accepted and
+  used up an attempt.
+- **Wrong range text:** the prompt always said "between 1 and 100", whatever the difficulty.
+- **Attempts left was off by one,** and lagged a click behind after pressing Submit.
+- **Difficulty settings were out of order:** Normal had a bigger range than Hard, and Hard had the
+  fewest attempts.
+
+### Fixes applied
+
+- Moved `get_range_for_difficulty`, `parse_guess`, `check_guess` and `update_score` into
+  `logic_utils.py`; `app.py` imports them.
+- Corrected the hint messages and removed the string-comparison fallback in `check_guess`.
+- The secret is always passed to `check_guess` as an integer.
+- New Game resets status, score and history, and picks a secret from the current difficulty's range.
+- Wrong guesses cost 5 points, the score is floored at 0 and capped at 100, and a first-try win
+  scores 100 (`100 - 10 * (attempt - 1)`, minimum 10 bonus).
+- `parse_guess(raw, low, high)` rejects out-of-range guesses. Only valid guesses count as an attempt or
+  appear in history.
+- The range text uses the selected difficulty, attempts start at 0, and "Attempts left" and the debug
+  panel update immediately on Submit.
+- Difficulty ranges now grow with difficulty and attempt limits shrink.
+- Every fix is marked with a `# FIX:` comment in the code.
 
 ## 📸 Demo Walkthrough
 
-Describe your fixed game in numbered steps so a reader can follow along without watching a video:
-
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. Run `python -m streamlit run app.py` and choose a difficulty in the sidebar. The sidebar and the
+   prompt both show the range for that difficulty (for example 1 to 50 on Normal).
+2. Type a number and press **Submit Guess**. "Attempts left" drops by one straight away.
+3. Read the hint: a guess above the secret says "Go LOWER!" and a guess below it says "Go HIGHER!".
+4. Try a number outside the range or text such as "abc". You get an error and no attempt is used.
+5. Guess the secret to win. A first-try win scores 100, and later wins score less.
+6. Press **New Game** to start again with a fresh secret, a reset score, and guesses accepted again.
 
 **Screenshot** *(optional)*: <!-- Insert a screenshot of your fixed, winning game here -->
 
 ## 🧪 Test Results
 
 ```
-# Paste your pytest output here, e.g.:
-# pytest tests/
-# ========================= X passed in 0.XXs =========================
+$ python3 -m pytest tests -q
+....................                                                     [100%]
+20 passed in 0.00s
 ```
 
 ## 🚀 Stretch Features
