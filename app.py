@@ -16,10 +16,12 @@ difficulty = st.sidebar.selectbox(
     index=1,
 )
 
+# FIX: attempt limits were out of order (Easy 6, Normal 8, Hard 5). They now shrink as
+# difficulty rises: Easy 8, Normal 7, Hard 6.
 attempt_limit_map = {
-    "Easy": 6,
-    "Normal": 8,
-    "Hard": 5,
+    "Easy": 8,
+    "Normal": 7,
+    "Hard": 6,
 }
 attempt_limit = attempt_limit_map[difficulty]
 
@@ -32,7 +34,8 @@ if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
 if "attempts" not in st.session_state:
-    st.session_state.attempts = 1
+    # FIX: attempts started at 1 (but New Game reset it to 0), so "Attempts left" was off by one.
+    st.session_state.attempts = 0
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -45,17 +48,26 @@ if "history" not in st.session_state:
 
 st.subheader("Make a guess")
 
-st.info(
-    f"Guess a number between 1 and 100. "
-    f"Attempts left: {attempt_limit - st.session_state.attempts}"
-)
+# FIX: this info box and the debug panel used to be drawn before the submit handler ran, so
+# "Attempts left" lagged one click behind. They now draw into placeholders that are filled
+# after the guess is processed (render_status below).
+info_slot = st.empty()
+debug_slot = st.container()
 
-with st.expander("Developer Debug Info"):
-    st.write("Secret:", st.session_state.secret)
-    st.write("Attempts:", st.session_state.attempts)
-    st.write("Score:", st.session_state.score)
-    st.write("Difficulty:", difficulty)
-    st.write("History:", st.session_state.history)
+
+def render_status():
+    # FIX: range was hardcoded to "1 and 100"; it now uses the selected difficulty's low/high.
+    info_slot.info(
+        f"Guess a number between {low} and {high}. "
+        f"Attempts left: {attempt_limit - st.session_state.attempts}"
+    )
+    with debug_slot.expander("Developer Debug Info"):
+        st.write("Secret:", st.session_state.secret)
+        st.write("Attempts:", st.session_state.attempts)
+        st.write("Score:", st.session_state.score)
+        st.write("Difficulty:", difficulty)
+        st.write("History:", st.session_state.history)
+
 
 raw_guess = st.text_input(
     "Enter your guess:",
@@ -70,6 +82,8 @@ with col2:
 with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
+# FIX: New Game never reset status, so the "game over" check below kept blocking guesses.
+# It now resets status, score and history, and picks the secret from the difficulty range.
 if new_game:
     st.session_state.attempts = 0
     st.session_state.secret = random.randint(low, high)
@@ -79,6 +93,7 @@ if new_game:
     st.rerun()
 
 if st.session_state.status != "playing":
+    render_status()
     if st.session_state.status == "won":
         st.success("You already won. Start a new game to play again.")
     else:
@@ -86,22 +101,19 @@ if st.session_state.status != "playing":
     st.stop()
 
 if submit:
-    st.session_state.attempts += 1
-
-    ok, guess_int, err = parse_guess(raw_guess)
+    # FIX: pass the difficulty range so out-of-range guesses are rejected, and only count
+    # an attempt (and history entry) for valid guesses so invalid input doesn't waste one.
+    ok, guess_int, err = parse_guess(raw_guess, low, high)
 
     if not ok:
-        st.session_state.history.append(raw_guess)
         st.error(err)
     else:
+        st.session_state.attempts += 1
         st.session_state.history.append(guess_int)
 
-        if st.session_state.attempts % 2 == 0:
-            secret = str(st.session_state.secret)
-        else:
-            secret = st.session_state.secret
-
-        outcome, message = check_guess(guess_int, secret)
+        # FIX: the secret was converted to a string on even attempts, which made check_guess
+        # compare text instead of numbers and gave wrong hints. Always pass it as an int.
+        outcome, message = check_guess(guess_int, st.session_state.secret)
 
         if show_hint:
             st.warning(message)
@@ -127,6 +139,8 @@ if submit:
                     f"The secret was {st.session_state.secret}. "
                     f"Score: {st.session_state.score}"
                 )
+
+render_status()
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")

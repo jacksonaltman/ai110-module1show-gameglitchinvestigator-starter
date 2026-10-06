@@ -35,7 +35,7 @@ I used Claude Code for this project.
 
 An example of an AI suggestion that was correct was that the high/low bug was caused by the hint messages being swapped, so to switch that around to make it work. After switching it, I verified the result by running the app and seeing what message it now output.
 
-
+An example of an AI suggestion that wasn't completely correct (at least for my best guess) was for the scoring. The AI wanted to make the maximum score 90 when fixing the scoring system, but from the previous code, it seemed like the maximum score should be 100. I updated the AI's directions to implement this and tested it by correctly guessing the number on the first try and verifying that the score was 100. Also used new tests in test_game_logic.py to ensure the logic worked correctly.
 
 ---
 
