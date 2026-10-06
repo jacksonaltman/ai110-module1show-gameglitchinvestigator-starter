@@ -79,9 +79,8 @@ number of attempts, and get a "Go HIGHER / Go LOWER" hint after each guess. Winn
 5. Guess the secret to win. A first-try win scores 100, and later wins score less.
 6. Press **New Game** to start again with a fresh secret, a reset score, and guesses accepted again.
 
-**Screenshot** *(optional)*: <!-- Insert a screenshot of your fixed, winning game here -->
 
-## 🧪 Test Results
+## Test Results
 
 ```
 $ python3 -m pytest tests -q
